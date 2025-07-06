@@ -1,0 +1,53 @@
+# System Architecture: CSV-NLP-SQL
+
+## Overview
+This document provides a high-level architectural view of the CSV-NLP-SQL system, illustrating the flow from user input to natural language answer generation, with SQL and data citations for transparency.
+
+## Architecture Diagram
+
+flowchart TD
+    A[User Uploads CSV & Asks Question] --> B[Streamlit Frontend]
+    B --> C[CSV Schema Analyzer]
+    C --> D[Schema Enhancement (AI Descriptions)]
+    D --> E[ChaseSQL: SQL Generation]
+    E --> F[SQL Candidate Ranking]
+    F --> G[SQL Executor (on Cleaned DataFrame)]
+    G --> H[Query Result DataFrame]
+    H --> I[Natural Language Answer Generator (AI)]
+    I --> J[Display: NL Answer + DataFrame as Citation]
+    J --> B
+
+    subgraph Backend
+        C
+        D
+        E
+        F
+        G
+        H
+        I
+    end
+
+    subgraph Frontend
+        B
+        J
+    end
+
+## Component Descriptions
+- **Streamlit Frontend:** Handles user interaction, file upload, question input, and displays results.
+- **CSV Schema Analyzer:** Infers column types and cleans column names for SQL compatibility.
+- **Schema Enhancement:** Uses AI to generate semantic descriptions for each column.
+- **ChaseSQL:** Generates multiple SQL candidates from the user's question and schema.
+- **SQL Candidate Ranking:** Ranks and selects the best SQL query for execution.
+- **SQL Executor:** Runs the selected SQL on the in-memory DataFrame.
+- **Natural Language Answer Generator:** Uses AI to summarize the SQL result in plain English, citing the DataFrame.
+
+## Flow Summary
+1. User uploads a CSV and asks a question.
+2. The backend analyzes and cleans the schema, then generates semantic descriptions.
+3. Multiple SQL queries are generated and ranked.
+4. The best SQL is executed on the cleaned DataFrame.
+5. The result is summarized in natural language, with the DataFrame shown as the citation.
+6. All outputs are displayed in the Streamlit UI.
+
+---
+For further details, see the technical design document or README.
