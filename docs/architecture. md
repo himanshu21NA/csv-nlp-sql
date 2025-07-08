@@ -6,15 +6,15 @@ This document provides a high-level architectural view of the CSV-NLP-SQL system
 ## Architecture Diagram
 
 flowchart TD
-    A[User Uploads CSV & Asks Question] --> B[Streamlit Frontend]
+    A[User Uploads CSV and Asks Question] --> B[Streamlit Frontend]
     B --> C[CSV Schema Analyzer]
-    C --> D[Schema Enhancement (AI Descriptions)]
+    C --> D[Schema Enhancement with AI Descriptions]
     D --> E[ChaseSQL: SQL Generation]
     E --> F[SQL Candidate Ranking]
-    F --> G[SQL Executor (on Cleaned DataFrame)]
+    F --> G[SQL Executor on Cleaned DataFrame]
     G --> H[Query Result DataFrame]
-    H --> I[Natural Language Answer Generator (AI)]
-    I --> J[Display: NL Answer + DataFrame as Citation]
+    H --> I[Natural Language Answer Generator AI]
+    I --> J[Display NL Answer and DataFrame as Citation]
     J --> B
 
     subgraph Backend
