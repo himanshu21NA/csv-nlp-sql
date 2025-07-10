@@ -27,6 +27,7 @@ You are an expert SQL generator. Convert this natural language query to SQL.
 - Read the query carefully and identify the main action (e.g., SELECT, COUNT, AVG).
 - Read the available columns and their meanings.
 - Do not use the column names apart from the available columns. 
+</Instructions>
 Query: {query}
 Table: {table_name}
 Available columns: {columns}
@@ -50,25 +51,22 @@ Return only the SQL query.
 # Prompt for schema description
 SCHEMA_DESCRIPTION_PROMPT = """
 Analyze this CSV schema and provide semantic descriptions in JSON format:
-
+Table Name: {table_name}
+Table Schema: {table_schema}
 Column Details: {columns_json}
 
-- For each column, provide:
+- By Using Column Details , Table Name and Table Schema, provide:
 1. semantic_meaning: What this column represents
 2. business_purpose: Likely business use case
 3. relationships: How it might relate to other columns
-- Provide description in paragraph format by using above points.
+- Description should be concise and focused on the column's role in the dataset.
+- This description will be used for creating SQL queries using Natural Language.
+- Provide description in paragraph format by using above points in 50 words or less.
 
 Return a JSON object "description" as key and description value as value.
 
 """
 
-# # Configuration for OpenAI
-# class Config:
-#     OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"  # Replace with your key or use environment variable
-#     OPENAI_MODEL = "gpt-3.5-turbo"
-
-# Prompt templates
 ZERO_SHOT_PROMPT = """
 You are an expert SQL developer. Generate ONLY valid, executable SQL queries.
 
@@ -169,4 +167,13 @@ The result of the query is:
 {result_preview}
 
 Based on the above, provide a clear and concise natural language answer to the user's question. If the result is a table, summarize the key findings. Always use the table as the citation for your answer.
+"""
+RERANK_PROMPT= """
+Question: {question}
+
+Here are {len} SQL queries and table information {table_schema}:
+
+{queries}
+
+Which query most accurately answers the question? Just give the best SQL.
 """

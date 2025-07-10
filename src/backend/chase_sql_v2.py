@@ -1,18 +1,15 @@
 import logging
 from typing import List, Dict, Any, Optional
-from openai import OpenAI
 from config.config import Config
-from .prompts import ZERO_SHOT_PROMPT, COT_PROMPT, FEW_SHOT_PROMPT, SCHEMA_AWARE_PROMPT
+from .prompts import ZERO_SHOT_PROMPT, COT_PROMPT, FEW_SHOT_PROMPT, SCHEMA_AWARE_PROMPT , RERANK_PROMPT
 from .schemas import SQLGenerationResponse
-from openai.lib._parsing._completions import type_to_response_format_param
+from .llm import llm_generate_content
 logger = logging.getLogger(__name__)
 
 class ChaseSQL:
     def __init__(self, schema: dict, question: str, api_key: Optional[str] = None):
         self.schema = schema
         self.question = question
-        self.client = OpenAI(api_key=api_key or Config.OPENAI_API_KEY)
-        self.model = Config.OPENAI_MODEL
         self.candidates: List[Dict[str, str]] = []
         self.best_sql: Optional[str] = None
 
@@ -34,13 +31,11 @@ class ChaseSQL:
         self.candidates = []
         for source, prompt in prompts:
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.1,
-                    response_format= type_to_response_format_param(SQLGenerationResponse)
+                response = llm_generate_content(
+                    prompt=prompt,
+                    pydantic_model=SQLGenerationResponse
                 )
-                llm_content = response.choices[0].message.content
+                llm_content = response
                 try:
                     parsed = SQLGenerationResponse.parse_raw(llm_content)
                     sql = parsed.sql
@@ -54,42 +49,27 @@ class ChaseSQL:
         if rerank_with_llm and len(self.candidates) > 1:
             # LLM reranker
             queries = '\n'.join([f"SQL {i+1}: {c['sql']}" for i, c in enumerate(self.candidates)])
-            rerank_prompt = f"""
-Question: {self.question}
-
-Here are {len(self.candidates)} SQL queries:
-{queries}
-
-Which query most accurately answers the question? Just give the best SQL.
-"""
+            rerank_prompt = RERANK_PROMPT.format(
+                question=self.question,
+                len=len(self.candidates),
+                queries=queries,
+                table_name=self.schema['table_name'],
+                columns=', '.join([col['name'] for col in self.schema['columns']])
+            )
+            logger.info(f"Rerank prompt: {rerank_prompt}")
             try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": rerank_prompt}],
-                    temperature=0.1
+                response = llm_generate_content(
+                    prompt=rerank_prompt,
+                    pydantic_model=SQLGenerationResponse
                 )
-                self.best_sql = response.choices[0].message.content.strip()
+                logger.info(f"Rerank response: {response}")
+                # Use the first choice as the best SQL
+                self.best_sql = response
                 return
             except Exception as e:
                 logger.error(f"Error reranking SQL candidates: {str(e)}")
         # Rule-based: try executing on sample data if provided
-        best_score = float('-inf')
-        best_sql = None
-        for c in self.candidates:
-            score = 0
-            if db_executor and sample_df is not None:
-                try:
-                    result = db_executor.execute_query(sample_df, c['sql'], self.schema['table_name'])
-                    if result is not None and len(result) > 0:
-                        score += 10
-                except Exception:
-                    score -= 5
-            # Prefer simpler queries
-            score -= c['sql'].count('(')
-            if score > best_score:
-                best_score = score
-                best_sql = c['sql']
-        self.best_sql = best_sql
+    
 
     def get_best_sql(self) -> str:
         return self.best_sql
