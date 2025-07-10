@@ -5,16 +5,14 @@ from openai import OpenAI
 from config.config import Config
 from .prompts import SCHEMA_DESCRIPTION_PROMPT
 from .schemas import ColumnDescription
+from .llm import llm_generate_content
 import numpy as np
-from openai.lib._parsing._completions import type_to_response_format_param
+import asyncio
 logger = logging.getLogger(__name__)
 
 class SchemaDescriptor:
     """Generates semantic descriptions for CSV schemas using OpenAI"""
     
-    def __init__(self, api_key: str = None):
-        self.client = OpenAI(api_key=api_key or Config.OPENAI_API_KEY)
-        self.model = Config.OPENAI_MODEL
     
     def generate_descriptions(self, schema: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -35,28 +33,25 @@ class SchemaDescriptor:
                         return {kk: convert_types(vv) for kk, vv in obj.items()}
                     elif isinstance(obj, list):
                         return [convert_types(i) for i in obj]
-                    elif isinstance(obj, (np.integer, np.floating)):
+                    elif isinstance(obj, (np.integer, np.floating, np.bool_)):
                         return obj.item()
                     else:
                         return obj
                 v_native = convert_types(v)
                 prompt = SCHEMA_DESCRIPTION_PROMPT.format(
                     table_name=schema['table_name'],
+                    table_schema=schema,
                     columns_json=k + " : " + json.dumps(v_native, indent=2)
                 )
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.1,
-                    response_format= type_to_response_format_param(ColumnDescription)
-                )
-                description = response.choices[0].message.content
+                asyncio.sleep(0.5)  # Small delay to avoid rate limiting
+                response = llm_generate_content(
+                    prompt=prompt,
+                    pydantic_model=ColumnDescription)
+                description = response
                 print(f"Description for {k}: {description}")
-                try:
-                    parsed = ColumnDescription.parse_raw(description)
-                    descriptions[k] = parsed.dict()
-                except Exception:
-                    descriptions[k] = description
+                
+                parsed = json.loads(description)
+                descriptions[k] = parsed["description"] if "description" in parsed else description
             # Parse and enhance schema
             enhanced_schema = self._enhance_schema_with_descriptions(schema, json.dumps(descriptions))
             

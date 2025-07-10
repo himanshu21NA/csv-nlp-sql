@@ -10,6 +10,21 @@ The CSV Natural Language Query System is an AI-first analytics platform that tra
 
 ---
 
+## 🎯 Ideal For
+- Business analysts
+- Startup founders
+- DataOps/BI engineers
+- Product teams
+
+---
+
+## 🔧 Coming Soon
+- Session-based follow-ups
+- Question understanding preview
+- CSV data cleaner
+
+---
+
 ## 🌟 Key Capabilities
 
 - **AI-Driven CSV Analysis:**
@@ -55,7 +70,7 @@ The CSV Natural Language Query System is an AI-first analytics platform that tra
    ```
 5. **Upload your CSV and start asking questions!**
 
----
+--- 
 
 ## 🧠 How It Works
 
@@ -81,9 +96,9 @@ The CSV Natural Language Query System is an AI-first analytics platform that tra
 ## 🤝 Contact & Collaboration
 For enterprise partnerships, custom integrations, or to discuss how this platform can accelerate your AI-first strategy, please contact:
 
-- **Your Name**  
-  [your.email@company.com](mailto:your.email@company.com)
-- [LinkedIn](https://www.linkedin.com/in/yourprofile)  
+- **Himanshu Verma**  
+  [Mail ID](mailto:vermahim9@gmail.com)
+- [LinkedIn](https://www.linkedin.com/in/himanshu-v-b46a3083/)  
 - [GitHub](https://github.com/yourusername/csv-nlp-sql)
 
 ---

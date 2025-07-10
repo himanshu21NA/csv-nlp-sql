@@ -12,7 +12,7 @@ class Config:
     
     # Application Configuration
     MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", "50"))  # MB
-    MAX_ROWS: int = int(os.getenv("MAX_ROWS", "10000"))
+    MAX_ROWS: int = int(os.getenv("MAX_ROWS", "1000"))
     
     # SQL Configuration
     SQL_TIMEOUT: int = int(os.getenv("SQL_TIMEOUT", "30"))  # seconds

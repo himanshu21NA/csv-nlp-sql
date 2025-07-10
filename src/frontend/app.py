@@ -86,6 +86,7 @@ def main():
             # Load and display data
             df = pd.read_csv(uploaded_file)
             df = clean_column_names(df)  # Clean column names
+            # df = df.iloc[:, :5]
             # Check file size
             if len(df) > Config.MAX_ROWS:
                 st.warning(f"File has {len(df)} rows. Only first {Config.MAX_ROWS} rows will be processed.")
@@ -136,13 +137,20 @@ def main():
             
             # Example queries
             st.markdown("**Example queries:**")
+            # Use a fixed set of example queries
+            # This can be extended or modified as needed
             examples = [
-                "Show me the first 10 rows",
-                "What are the unique values in the first column?",
-                "Count the number of rows for each category",
-                "Show me the average of numeric columns",
-                "Find the maximum value in each numeric column"
-            ]
+                    "What does this dataset contain?",
+                    "Can you summarize the columns for me?",
+                    "How many rows are there in total?",
+                    "What are the different values in the 'Status' column?",
+                    "What’s the most frequent value in each column?",
+                    "Can you show me some sample rows?",
+                    "Are there any missing values in the dataset?",
+                    "Which columns are numeric and what are their averages?",
+                    "Which category has the highest number of entries?",
+                    "What’s the range of values in the 'Amount' column?"
+                ]
             
             example_cols = st.columns(len(examples))
             for i, example in enumerate(examples):
